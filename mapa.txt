@@ -1,0 +1,11 @@
+10 10
+#xxxx$....
+...xxxxx..
+...x...x..
+...xx..x.x
+.x..x.xx.x
+.x.....x.x
+xxxxxx.x..
+.....x.x..
+.xx..x.xx.
+xx.xxxxxxx
