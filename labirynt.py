@@ -7,6 +7,7 @@ margx = 20
 margy = 60
 szerokosc_okna = 800
 wysokosc_okna = 600
+nazwa_pliku = 'mapa.txt'
 
 
 # ------------ Obsługa klawiatury - początek ----------
@@ -34,7 +35,7 @@ def ini_keyboard():
 
 
 def odczytaj_plik():
-    file = open('mapa.txt', 'r')
+    file = open(nazwa_pliku, 'r')
     mapa = file.read().split('\n')
     file.close()
 
@@ -95,7 +96,7 @@ def current_path_length(obj, path_lenth):
     obj.stamp()
     obj.color('blue')
     obj.goto(0, -wysokosc_okna/2-20)
-    obj.write(f'Searching for an exit from the labirynth', font=("Arial", 10, "bold"), align='center')
+    obj.write(f'Searching for an exit from the labyrinth', font=("Arial", 10, "bold"), align='center')
     obj.fillcolor("blue")
     obj.hideturtle()
 
@@ -116,17 +117,44 @@ def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_
     x = index_kolumny
     y = index_wiersze
 
-    x = x * odstep_szerokosc - szerokosc_okna/2 + odstep_szerokosc/2
-    y = -1 * (y * odstep_wysokosc - wysokosc_okna/2 + odstep_wysokosc/2)
+    x = x * odstep_szerokosc - szerokosc_okna/2
+    y = -1 * (y * odstep_wysokosc - wysokosc_okna/2 )
+    
+    szerokosc = (szerokosc_okna/2)/ilosc_wierszy
+    wysokosc = (wysokosc_okna/2)/ilosc_kolumn
+    
+    if (color == "orange") or (color == 'red'):
+        kolor_wypelnienia = 'grey'
+        kolor_obramowki = color
+    else:
+        kolor_wypelnienia = color
+        kolor_obramowki = 'black'
 
-    obj.penup()
-    obj.stamp()
-    obj.shape("square")
-    bok1 = (szerokosc_okna/2)/ilosc_wierszy/10
-    bok2 = (wysokosc_okna/2)/ilosc_kolumn/10
-    obj.shapesize(abs(bok2), abs(bok1))
-    obj.color("black", color)
-    obj.goto(x, y)
+    narysuj_wypelniony_prostokat(
+        obj, x, y, szerokosc*1.9, wysokosc*1.9, 4, kolor_obramowki, kolor_wypelnienia)
+
+def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
+    board.fillcolor(fill)
+    board.pencolor(color)
+    board.pensize(size)
+    board.setheading(0)
+    
+    board.begin_fill()
+    board.up()
+    board.goto(x,y)
+    board.down()
+    # draw top
+    board.forward(width)
+    # draw right
+    board.right(90)
+    board.forward(height)
+    # draw bottom
+    board.right(90)
+    board.forward(width)
+    # draw left
+    board.right(90)
+    board.forward(height)
+    board.end_fill()
 
 def main():
     ini_keyboard()
