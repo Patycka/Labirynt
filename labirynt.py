@@ -1,10 +1,11 @@
 from turtle import*
 import time
+from math import sqrt
 
 # ---- Stałe ---------
 margx = 20
 margy = 60
-szerokosc_okna = 700
+szerokosc_okna = 800
 wysokosc_okna = 600
 
 
@@ -64,33 +65,15 @@ def odczytaj_ilosc_wierszy_kolumn(mapa):
     liczba_wierszy, liczba_kolumn = map(int, mapa[0].split())
     return (liczba_wierszy, liczba_kolumn)
 
-def pokaz_plansze(ilosc_wierszy, ilosc_kolumn):
+def pokaz_plansze():
     screen = Screen()
     screen.setup(szerokosc_okna+margx, wysokosc_okna+margy)
     screen.title("Labirynt")
 
-    pen = Turtle()
     path_length_obj = Turtle()
 
     current_path_length(path_length_obj, 0)
-
-    odstep_wysokosc = wysokosc_okna / ilosc_wierszy
-    odstep_szerokosc = szerokosc_okna / ilosc_kolumn
-
-    a = -szerokosc_okna/2
-    b = wysokosc_okna/2
-    for i in range(ilosc_wierszy+1):
-        # linie w pionie
-        pen.penup()
-        pen.goto(a + i*odstep_szerokosc, b)
-        pen.pendown()
-        pen.goto(a + i*odstep_szerokosc, -b)
-        # linie w poziomie
-        pen.penup()
-        pen.goto(a, b - i*odstep_wysokosc)
-        pen.pendown()
-        pen.goto(-a, b - i*odstep_wysokosc)
-    pen.hideturtle()
+    path_length_obj.hideturtle()
 
 def current_path_length(obj, path_lenth):
     obj.penup()
@@ -116,16 +99,46 @@ def current_path_length(obj, path_lenth):
     obj.fillcolor("blue")
     obj.hideturtle()
 
+def stworz_strukture_planszy(pen, mapa):
+    plansza_slownik = {'x': 'maroon', '.': 'gainsboro',
+                       '#': 'orange', '$': 'red'}
+    for index_wiersze in range(len(mapa)):
+        for index_kolumny in range(len(mapa[index_wiersze])):
+            color = plansza_slownik.get(mapa[index_wiersze][index_kolumny])
+            dodaj_kwadrat(pen, color, 10, 10, index_wiersze, index_kolumny)
+
+
+def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_kolumny):
+    odstep_wysokosc = wysokosc_okna / ilosc_wierszy
+    odstep_szerokosc = szerokosc_okna / ilosc_kolumn
+
+    # Zamiana indeksów listy na współrzędne (wiersze -> y, kolumny -> x)
+    x = index_kolumny
+    y = index_wiersze
+
+    x = x * odstep_szerokosc - szerokosc_okna/2 + odstep_szerokosc/2
+    y = -1 * (y * odstep_wysokosc - wysokosc_okna/2 + odstep_wysokosc/2)
+
+    obj.penup()
+    obj.stamp()
+    obj.shape("square")
+    bok1 = (szerokosc_okna/2)/ilosc_wierszy/10
+    bok2 = (wysokosc_okna/2)/ilosc_kolumn/10
+    obj.shapesize(abs(bok2), abs(bok1))
+    obj.color("black", color)
+    obj.goto(x, y)
+
 def main():
     ini_keyboard()
 
     dane = odczytaj_plik()
     sprawdz_poprawnosc_danych(dane)
 
-    liczba_wierszy, liczba_kolumn = odczytaj_ilosc_wierszy_kolumn(dane)
-
     tracer(0, 0)
-    pokaz_plansze(liczba_wierszy, liczba_kolumn)
+    pokaz_plansze()
+
+    pen = Turtle()
+    stworz_strukture_planszy(pen, dane[1:])
     update()
 
     while pressed_key != "q":

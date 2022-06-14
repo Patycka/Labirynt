@@ -21,4 +21,4 @@ Example below:
 xxxxxx.x..
 .....x.x..
 .xx..x.xx.
-xx.xxxxxxx
+..x.......
