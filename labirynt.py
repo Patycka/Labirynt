@@ -6,7 +6,7 @@ from math import sqrt
 margx = 20
 margy = 60
 szerokosc_okna = 800
-wysokosc_okna = 600
+wysokosc_okna = 700
 nazwa_pliku = 'mapa.txt'
 
 
@@ -119,10 +119,7 @@ def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_
 
     x = x * odstep_szerokosc - szerokosc_okna/2
     y = -1 * (y * odstep_wysokosc - wysokosc_okna/2 )
-    
-    szerokosc = (szerokosc_okna/2)/ilosc_wierszy
-    wysokosc = (wysokosc_okna/2)/ilosc_kolumn
-    
+
     if (color == "orange") or (color == 'red'):
         kolor_wypelnienia = 'grey'
         kolor_obramowki = color
@@ -130,8 +127,15 @@ def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_
         kolor_wypelnienia = color
         kolor_obramowki = 'black'
 
+    szerokosc_obramowki = 4
     narysuj_wypelniony_prostokat(
-        obj, x, y, szerokosc*1.9, wysokosc*1.9, 4, kolor_obramowki, kolor_wypelnienia)
+        obj, x, y, odstep_szerokosc*0.95, odstep_wysokosc*0.95, szerokosc_obramowki, kolor_obramowki, kolor_wypelnienia)
+    
+    if color == 'orange':
+        r_kola = odstep_szerokosc/4
+        x_kola = x + odstep_szerokosc/2 + r_kola - szerokosc_obramowki/2
+        y_kola = y - odstep_wysokosc/2
+        narysuj_kolo(obj, x_kola, y_kola, r_kola)
 
 def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
     board.fillcolor(fill)
@@ -155,6 +159,18 @@ def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
     board.right(90)
     board.forward(height)
     board.end_fill()
+
+def narysuj_kolo(obj, x, y, promien):
+    obj.penup()
+    obj.goto(x,y)
+    obj.pencolor("red")
+    obj.fillcolor("red")
+    obj.begin_fill()
+    obj.circle(promien)
+    obj.end_fill()
+
+def ruch_w_labiryncie():
+    pass
 
 def main():
     ini_keyboard()
