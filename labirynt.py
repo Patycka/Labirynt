@@ -82,7 +82,7 @@ def odczytaj_ilosc_wierszy_kolumn(mapa):
     liczba_wierszy, liczba_kolumn = map(int, mapa[0].split())
     return (liczba_wierszy, liczba_kolumn)
 
-def pokaz_plansze():
+def pokaz_plansze(path_lenth=0):
     '''
     Funkcja tworzy ekran labiryntu i nagłówki informacyjne
     '''
@@ -90,12 +90,16 @@ def pokaz_plansze():
     screen.setup(szerokosc_okna+margx, wysokosc_okna+margy)
     screen.title("Labirynt")
 
+def zaktualizuj_naglowek(path_lenth):
+    '''
+    Funkcja tworzy nagłówki informacyjne
+    '''
     path_length_obj = Turtle()
 
-    current_path_length(path_length_obj, 0)
+    current_path_length(path_length_obj, path_lenth)
     path_length_obj.hideturtle()
 
-def current_path_length(obj, path_lenth):
+def current_path_length(obj, current_path):
     '''
     Funkcja wypisuje nagłówek zawierający długość przebytej ścieżki.
     '''
@@ -108,7 +112,7 @@ def current_path_length(obj, path_lenth):
     obj.stamp()
     obj.color('blue')
     obj.goto(0, wysokosc_okna/2+5)
-    obj.write(f'Current path length: {path_lenth}', font=(
+    obj.write(f'Current path length: {current_path}', font=(
         "Arial", 12), align='center')
     obj.penup()
     obj.goto(0, -wysokosc_okna/2-10)
@@ -212,8 +216,6 @@ def narysuj_wypelniony_prostokat(board, x, y, width, height, size, color, fill):
 
 def narysuj_kolo(obj, x, y, promien):
     obj.clear()
-
-    #obj.penup()
     obj.up()
     obj.goto(x, y)
     obj.down()
@@ -239,20 +241,100 @@ def zwroc_indeks_znaku(mapa, znak):
             return pozycja
 
 def zwroc_indeks_nastepnej_pozycji(mapa, znak_poprz):
-    for index_wiersz in range(len(mapa)-1):
-        for index_kolumna in range(len(mapa[0])-1):
+    current_path = 0
+    for index_wiersz in range(len(mapa)):
+        for index_kolumna in range(len(mapa[0])):
             if znak_poprz == mapa[index_wiersz][index_kolumna]:
                 if znak_poprz != '#':
                     mapa[index_wiersz][index_kolumna] = 'b'
 
-                if mapa[index_wiersz+1][index_kolumna] == '.':
+                if (index_wiersz == len(mapa) - 1) or (index_kolumna == len(mapa) - 1):
+                    if (index_wiersz == len(mapa) - 1) and (index_kolumna == len(mapa) - 1):
+                        if mapa[index_wiersz - 1][index_kolumna] == '.' or mapa[index_wiersz - 1][index_kolumna] == '$':
+                            if mapa[index_wiersz - 1][index_kolumna] == '$':
+                                return '$'
+                            mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            current_path += 1
+                        elif mapa[index_wiersz][index_kolumna - 1] == '.' or mapa[index_wiersz][index_kolumna - 1] == '$':
+                            if mapa[index_wiersz][index_kolumna - 1] == '$':
+                                return '$'
+                            mapa[index_wiersz][index_kolumna - 1] = 'k'
+                            current_path += 1
+                        else:
+                            mapa[index_wiersz][index_kolumna] = 'o'
+                            if mapa[index_wiersz - 1][index_kolumna] == 'b':
+                                mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            elif mapa[index_wiersz][index_kolumna - 11] == 'b':
+                                mapa[index_wiersz][index_kolumna - 1] = 'k'
+                    elif index_wiersz == len(mapa) - 1:
+                        if mapa[index_wiersz - 1][index_kolumna] == '.' or mapa[index_wiersz - 1][index_kolumna] == '$':
+                            if mapa[index_wiersz - 1][index_kolumna] == '$':
+                                return '$'
+                            mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            current_path += 1
+                        elif mapa[index_wiersz][index_kolumna + 1] == '.' or mapa[index_wiersz][index_kolumna + 1] == '$':
+                            if mapa[index_wiersz][index_kolumna + 1] == '$':
+                                return '$'
+                            mapa[index_wiersz][index_kolumna + 1] = 'k'
+                            current_path += 1
+                        elif mapa[index_wiersz][index_kolumna - 1] == '.' or mapa[index_wiersz][index_kolumna - 1] == '$':
+                            if mapa[index_wiersz][index_kolumna - 1] == '$':
+                                return '$'
+                            mapa[index_wiersz][index_kolumna - 1] = 'k'
+                            current_path += 1
+                        else:
+                            mapa[index_wiersz][index_kolumna] = 'o'
+                            if mapa[index_wiersz - 1][index_kolumna] == 'b':
+                                mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            elif mapa[index_wiersz][index_kolumna + 1] == 'b':
+                                mapa[index_wiersz][index_kolumna + 1] = 'k'
+                            elif mapa[index_wiersz][index_kolumna - 11] == 'b':
+                                mapa[index_wiersz][index_kolumna - 1] = 'k'
+                    else:
+                        if mapa[index_wiersz + 1][index_kolumna] == '.' or mapa[index_wiersz + 1][index_kolumna] == '$':
+                            if mapa[index_wiersz + 1][index_kolumna] == '$':
+                                return '$'
+                            mapa[index_wiersz + 1][index_kolumna] = 'k'
+                            current_path += 1
+                        elif mapa[index_wiersz - 1][index_kolumna] == '.' or mapa[index_wiersz - 1][index_kolumna] == '$':
+                            if mapa[index_wiersz - 1][index_kolumna] == '$':
+                                return '$'
+                            mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            current_path += 1
+                        elif mapa[index_wiersz][index_kolumna - 1] == '.' or mapa[index_wiersz][index_kolumna - 1] == '$':
+                            if mapa[index_wiersz][index_kolumna - 1] == '$':
+                                return '$'
+                            mapa[index_wiersz][index_kolumna - 1] = 'k'
+                            current_path += 1
+                        else:
+                            mapa[index_wiersz][index_kolumna] = 'o'
+                            if mapa[index_wiersz + 1][index_kolumna] == 'b':
+                                mapa[index_wiersz + 1][index_kolumna] = 'k'
+                            elif mapa[index_wiersz - 1][index_kolumna] == 'b':
+                                mapa[index_wiersz - 1][index_kolumna] = 'k'
+                            elif mapa[index_wiersz][index_kolumna - 11] == 'b':
+                                mapa[index_wiersz][index_kolumna - 1] = 'k'
+
+                elif mapa[index_wiersz+1][index_kolumna] == '.' or mapa[index_wiersz+1][index_kolumna] == '$':
+                    if mapa[index_wiersz+1][index_kolumna] == '$':
+                        return '$'
                     mapa[index_wiersz+1][index_kolumna] = 'k'
-                elif mapa[index_wiersz-1][index_kolumna] == '.':
+                    current_path += 1
+                elif mapa[index_wiersz-1][index_kolumna] == '.' or mapa[index_wiersz-1][index_kolumna] == '$':
+                    if mapa[index_wiersz-1][index_kolumna] == '$':
+                        return '$'
                     mapa[index_wiersz-1][index_kolumna] = 'k'
-                elif mapa[index_wiersz][index_kolumna+1] == '.':
+                    current_path += 1
+                elif mapa[index_wiersz][index_kolumna+1] == '.' or mapa[index_wiersz][index_kolumna+1] == '$':
+                    if mapa[index_wiersz][index_kolumna+1] == '$':
+                        return '$'
                     mapa[index_wiersz][index_kolumna+1] = 'k'
-                elif mapa[index_wiersz][index_kolumna-1] == '.':
+                    current_path += 1
+                elif mapa[index_wiersz][index_kolumna-1] == '.' or mapa[index_wiersz][index_kolumna-1] == '$':
+                    if mapa[index_wiersz][index_kolumna-1] == '$':
+                        return '$'
                     mapa[index_wiersz][index_kolumna-1] = 'k'
+                    current_path += 1
                 # Jezeli brak już korytarza, oznacz drogę jako odwiedzoną i cofnij się
                 else:
                     mapa[index_wiersz][index_kolumna] = 'o'
@@ -264,7 +346,7 @@ def zwroc_indeks_nastepnej_pozycji(mapa, znak_poprz):
                         mapa[index_wiersz][index_kolumna+1] = 'k'
                     elif mapa[index_wiersz][index_kolumna-11] == 'b':
                         mapa[index_wiersz][index_kolumna-1] = 'k'
-                return
+                return str(current_path)
 
 
 def main():
@@ -275,6 +357,8 @@ def main():
 
     tracer(0, 0)
     pokaz_plansze()
+    current_path = 0
+    zaktualizuj_naglowek(current_path)
 
     pen = Turtle()
     kolo = Turtle()
@@ -283,14 +367,21 @@ def main():
     dane_kopia = dane[1:].copy()
     zmien_strukture_mapy(dane_kopia)
 
-    tracer(1, 0.2)
     zwroc_indeks_nastepnej_pozycji(dane_kopia, '#')
     zaktualizuj_strukture_planszy(pen, kolo, dane_kopia)
     update()
 
+    wyjscie = False
     while pressed_key != "q":
-        zwroc_indeks_nastepnej_pozycji(dane_kopia, 'k')
-        zaktualizuj_strukture_planszy(pen, kolo, dane_kopia)
+        if not wyjscie:
+            znak = zwroc_indeks_nastepnej_pozycji(dane_kopia, 'k')
+            if znak == "$":
+                wyjscie = True
+            else:
+                current_path += int(znak)
+                zaktualizuj_naglowek(current_path)
+            zaktualizuj_strukture_planszy(pen, kolo, dane_kopia)
+            print(current_path)
         update()
         time.sleep(0.2)
     bye()
