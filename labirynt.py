@@ -24,7 +24,9 @@ def set_direction(key):
 
 
 def ini_keyboard():
-
+    '''
+    Funkcja pozwala na wyjście z programu, jeżeli użytkownik wybierze przycisk 'q'
+    '''
     for direction in ["", "q"]:
         onkey(set_direction(direction.lower()), direction)
     hideturtle()
@@ -35,6 +37,9 @@ def ini_keyboard():
 
 
 def odczytaj_plik():
+    '''
+    Funkcja odczytuje plik z mapą labiryntu i zwraca tą mapę jako lista stringów.
+    '''
     file = open(nazwa_pliku, 'r')
     mapa = file.read().split('\n')
     file.close()
@@ -42,7 +47,14 @@ def odczytaj_plik():
     return mapa
 
 def sprawdz_poprawnosc_danych(mapa):
-
+    '''
+    Funkcja sprawdza poprawność danych wpisanych w pliku tekstowym. Sprawdzane są:
+    - pierwsza linia pliku, czy zawiera 2 liczby typu int
+    - ilość wierszy, czy jest zgodna z ilością zdefiniowaną w pierwszej linii
+    - ilość kolumn, czy jest zgodna z ilością zdefiniowaną w pierwszej linii
+    - czy dane zawierają jedno wejście i przynajmniej jedno wyjście
+    - czy dane zawierają inne znaki niż te dozwolone
+    '''
     liczba_wierszy, liczba_kolumn = odczytaj_ilosc_wierszy_kolumn(mapa)
 
     # Sprawdzenie, czy ilość wierszy zdefiniowana w pierwszej linii pokrywa z ilością
@@ -62,11 +74,18 @@ def sprawdz_poprawnosc_danych(mapa):
 
 def odczytaj_ilosc_wierszy_kolumn(mapa):
     # Zamień elementy z pierwszej linii na typ int
+    pierwsza_linia = mapa[0].split()
+    assert len(pierwsza_linia) == 2, 'Niepoprawna ilość argumentów w pierwszej linii'
+    assert pierwsza_linia[0].isdigit(), "Rozmiar wiersza nie jest typu int"
+    assert pierwsza_linia[1].isdigit(), "Rozmiar kolumny nie jest typu int"
     assert map(int, mapa[0].split()), "Niepoprawna pierwsza linia w pliku"
     liczba_wierszy, liczba_kolumn = map(int, mapa[0].split())
     return (liczba_wierszy, liczba_kolumn)
 
 def pokaz_plansze():
+    '''
+    Funkcja tworzy ekran labiryntu i nagłówki informacyjne
+    '''
     screen = Screen()
     screen.setup(szerokosc_okna+margx, wysokosc_okna+margy)
     screen.title("Labirynt")
@@ -77,6 +96,9 @@ def pokaz_plansze():
     path_length_obj.hideturtle()
 
 def current_path_length(obj, path_lenth):
+    '''
+    Funkcja wypisuje nagłówek zawierający długość przebytej ścieżki.
+    '''
     obj.penup()
     obj.goto(0, wysokosc_okna/2+15)
     obj.clear()
@@ -100,16 +122,39 @@ def current_path_length(obj, path_lenth):
     obj.fillcolor("blue")
     obj.hideturtle()
 
-def stworz_strukture_planszy(pen, mapa):
+def stworz_strukture_planszy(pen, kolo, mapa):
+
+    '''
+    Funkcja tworzy planszę z kwadratami na podstawie listy dwuwymiarowej mapa.
+    Korzysta ze słownika, który na podstawie znaku w liście wybiera kolor kwadratu.
+    Kolejne indeksy listy mapa wskazują lokalizację każdego kwadratu.
+    '''
+
     plansza_slownik = {'x': 'maroon', '.': 'gainsboro',
-                       '#': 'orange', '$': 'red'}
+                       '#': 'orange', '$': 'red', 'o': 'blue'}
     for index_wiersze in range(len(mapa)):
         for index_kolumny in range(len(mapa[index_wiersze])):
             color = plansza_slownik.get(mapa[index_wiersze][index_kolumny])
-            dodaj_kwadrat(pen, color, 10, 10, index_wiersze, index_kolumny)
+            dodaj_kwadrat(pen, kolo, color, 10, 10, index_wiersze, index_kolumny)
 
+def zaktualizuj_strukture_planszy(pen, kolo, mapa):
+    # o - odwiedzone, k - pozycja kropki, b - bieżąca ścieżka
+    plansza_slownik = {'x': 'maroon', '.': 'gainsboro',
+                       '#': 'orange', '$': 'red', 'o': 'gray', 'k': 'kropka', 'b': 'blue'}
+    for index_wiersze in range(len(mapa)):
+        for index_kolumny in range(len(mapa[index_wiersze])):
+            color = plansza_slownik.get(mapa[index_wiersze][index_kolumny])
+            if color == 'kropka' or color == 'gray':
+                dodaj_kwadrat(pen, kolo, color, 10, 10, index_wiersze, index_kolumny)
 
-def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_kolumny):
+def dodaj_kwadrat(obj, kolo, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_kolumny):
+    '''
+    Funkcja zamienia indeksy wierszy i kolumn z listy na współprzędne kwadratów. Wywołuje funkcję
+    rysująca kwadraty podając odpowiednie współrzędne i kolory.
+    '''
+    global wysokosc_okna
+    global szerokosc_okna
+
     odstep_wysokosc = wysokosc_okna / ilosc_wierszy
     odstep_szerokosc = szerokosc_okna / ilosc_kolumn
 
@@ -121,8 +166,13 @@ def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_
     y = -1 * (y * odstep_wysokosc - wysokosc_okna/2 )
 
     if (color == "orange") or (color == 'red'):
-        kolor_wypelnienia = 'grey'
+        kolor_wypelnienia = 'gainsboro'
         kolor_obramowki = color
+        if color == "orange":
+            kolor_wypelnienia = "blue"
+    elif color == 'kropka':
+        kolor_wypelnienia = 'blue'
+        kolor_obramowki = 'black'
     else:
         kolor_wypelnienia = color
         kolor_obramowki = 'black'
@@ -131,13 +181,13 @@ def dodaj_kwadrat(obj, color, ilosc_wierszy, ilosc_kolumn, index_wiersze, index_
     narysuj_wypelniony_prostokat(
         obj, x, y, odstep_szerokosc*0.95, odstep_wysokosc*0.95, szerokosc_obramowki, kolor_obramowki, kolor_wypelnienia)
     
-    if color == 'orange':
+    if color == 'orange' or color == 'kropka':
         r_kola = odstep_szerokosc/4
-        x_kola = x + odstep_szerokosc/2 + r_kola - szerokosc_obramowki/2
-        y_kola = y - odstep_wysokosc/2
-        narysuj_kolo(obj, x_kola, y_kola, r_kola)
+        x_kola = x + odstep_szerokosc/2
+        y_kola = y - odstep_wysokosc/2 - r_kola
+        narysuj_kolo(kolo, x_kola, y_kola, r_kola)
 
-def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
+def narysuj_wypelniony_prostokat(board, x, y, width, height, size, color, fill):
     board.fillcolor(fill)
     board.pencolor(color)
     board.pensize(size)
@@ -145,7 +195,7 @@ def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
     
     board.begin_fill()
     board.up()
-    board.goto(x,y)
+    board.goto(x, y)
     board.down()
     # draw top
     board.forward(width)
@@ -161,16 +211,61 @@ def narysuj_wypelniony_prostokat(board,x,y,width,height,size,color,fill):
     board.end_fill()
 
 def narysuj_kolo(obj, x, y, promien):
-    obj.penup()
-    obj.goto(x,y)
+    obj.clear()
+
+    #obj.penup()
+    obj.up()
+    obj.goto(x, y)
+    obj.down()
     obj.pencolor("red")
     obj.fillcolor("red")
     obj.begin_fill()
     obj.circle(promien)
     obj.end_fill()
+    obj.hideturtle()
 
-def ruch_w_labiryncie():
-    pass
+def zmien_strukture_mapy(mapa):
+    '''
+    Funkcja tworzy dwyuwymiarową listę, zawierającą znaki zawarte w pliku.
+    '''
+    for indeks_wiersz in range(len(mapa)):
+        lista_znakow = [znak for znak in mapa[indeks_wiersz]]
+        mapa[indeks_wiersz] = lista_znakow
+
+def zwroc_indeks_znaku(mapa, znak):
+    for wiersz in mapa:
+        if znak in wiersz:
+            pozycja = [mapa.index(wiersz), wiersz.index(znak)]
+            return pozycja
+
+def zwroc_indeks_nastepnej_pozycji(mapa, znak_poprz):
+    for index_wiersz in range(len(mapa)-1):
+        for index_kolumna in range(len(mapa[0])-1):
+            if znak_poprz == mapa[index_wiersz][index_kolumna]:
+                if znak_poprz != '#':
+                    mapa[index_wiersz][index_kolumna] = 'b'
+
+                if mapa[index_wiersz+1][index_kolumna] == '.':
+                    mapa[index_wiersz+1][index_kolumna] = 'k'
+                elif mapa[index_wiersz-1][index_kolumna] == '.':
+                    mapa[index_wiersz-1][index_kolumna] = 'k'
+                elif mapa[index_wiersz][index_kolumna+1] == '.':
+                    mapa[index_wiersz][index_kolumna+1] = 'k'
+                elif mapa[index_wiersz][index_kolumna-1] == '.':
+                    mapa[index_wiersz][index_kolumna-1] = 'k'
+                # Jezeli brak już korytarza, oznacz drogę jako odwiedzoną i cofnij się
+                else:
+                    mapa[index_wiersz][index_kolumna] = 'o'
+                    if mapa[index_wiersz+1][index_kolumna] == 'b':
+                        mapa[index_wiersz+1][index_kolumna] = 'k'
+                    elif mapa[index_wiersz-1][index_kolumna] == 'b':
+                        mapa[index_wiersz-1][index_kolumna] = 'k'
+                    elif mapa[index_wiersz][index_kolumna+1] == 'b':
+                        mapa[index_wiersz][index_kolumna+1] = 'k'
+                    elif mapa[index_wiersz][index_kolumna-11] == 'b':
+                        mapa[index_wiersz][index_kolumna-1] = 'k'
+                return
+
 
 def main():
     ini_keyboard()
@@ -182,10 +277,20 @@ def main():
     pokaz_plansze()
 
     pen = Turtle()
-    stworz_strukture_planszy(pen, dane[1:])
+    kolo = Turtle()
+    stworz_strukture_planszy(pen, kolo, dane[1:])
+
+    dane_kopia = dane[1:].copy()
+    zmien_strukture_mapy(dane_kopia)
+
+    tracer(1, 0.2)
+    zwroc_indeks_nastepnej_pozycji(dane_kopia, '#')
+    zaktualizuj_strukture_planszy(pen, kolo, dane_kopia)
     update()
 
     while pressed_key != "q":
+        zwroc_indeks_nastepnej_pozycji(dane_kopia, 'k')
+        zaktualizuj_strukture_planszy(pen, kolo, dane_kopia)
         update()
         time.sleep(0.2)
     bye()
